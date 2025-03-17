@@ -13,7 +13,7 @@ pip install beautifulsoup4
 Then go into config.json and change the key for whatsapp you can get it in here https://rapidapi.com/airaudoeduardo/api/whatsapp-data1/pricing
 
 # Preview
-![preview](https://github.com/scarlmao/phonium/blob/main/image.png)
+![preview](https://github.com/scarlmao/phonium/blob/main/Screenshot%202025-03-16%20215516.png)
 
 ## Star History
 
