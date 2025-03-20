@@ -1,0 +1,4 @@
+requests
+phonenumbers
+pystyle
+beautifulsoup4

@@ -5,10 +5,7 @@ phonium - A location, google dorking, socmint phone number lookup tool.
 ## Installation
 
 ```
-pip install requests
-pip install phonenumbers
-pip install pystyle
-pip install beautifulsoup4
+pip install -r requirements.txt
 ```
 Then go into config.json and change the key for whatsapp you can get it in here https://rapidapi.com/airaudoeduardo/api/whatsapp-data1/pricing
 
