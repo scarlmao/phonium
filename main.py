@@ -31,7 +31,8 @@ def main():
  print((Colorate.Vertical(Colors.blue_to_purple, banner,1)))
  option = input(Colors.blue + "input > ")
  if option == "1":
-  phone_number = input(Colors.purple + "Phone Number: ")
+  phone_number = "+" + input(Colors.purple + "Phone Number: ").lstrip("+")
+  # if this works as intended, then the user does not have to enter a + ... but if they do, it'll trim it out
   parsed_number = phonenumbers.parse(phone_number)
         
   country = geocoder.region_code_for_number(parsed_number)
@@ -158,45 +159,66 @@ def main():
 }
 
   response = requests.get(url, headers=headers)
+  whatsapp_data = response.json()
+  print(whatsapp_data) # added the print statement for troubleshooting
+  if whatsapp_data.get("isUser"):
+      if whatsapp_data.get("isBusiness"):
+          whatsappx = f"WhatsApp | Valid (Business) | {phone_number}"
+      else:
+          whatsappx = f"WhatsApp | Valid (Personal) | {phone_number}"
+      wuser = whatsapp_data.get("pushname") or "User | NONE"
+      wprofile = whatsapp_data.get("profilePic", "Profile | NONE")
+      wabout = whatsapp_data.get("about", "About | NONE")
+  else:
+      whatsappx = f"WhatsApp | Invalid | {phone_number}"
+      wuser = "User | NONE"
+      wprofile = "Profile | NONE"
+      wabout = "About | NONE"
 
-  if "isBusiness" in response.json():
+ print(Colors.pink + "Social Media")
+ print(Colors.purple + "-----------------------------------------------------")
+ print(Colors.pink + twitter)
+ print(Colors.pink + vk)
+ print(Colors.pink + venmo)
+ print(Colors.pink + whatsappx)
+ print(Colors.purple + "-----------------------")
+ print(Colors.purple + wuser)
+ print(Colors.purple + "-----------------------")
+ print(Colors.purple + f"User profile pic url:\n {wprofile}")
+ print(Colors.purple + wabout)
+ print(Colors.purple + "-----------------------")
+ print(Colors.purple + "-----------------------------------------------------\n")
+
+ input("Press Enter To Return to menu ")
+ main()
+ """ if "isBusiness" in response.json():
     whatsappx = f"WhatsApp | Valid | {phone_number}"
-    wuser = response.json()["pushname"]
-    wprofile = response.json()["profilePic"]
-    wabout = response.json()["about"]
+    #wuser = response.json()["pushname"]
+    # .get... or is more pythonic and slightly more effficient.
+    wuser= whatsapp_data.get("pushname") or "User | NONE"
+    #wprofile = response.json()["profilePic"
+    wprofile = whatsapp_data.get("profilePic", "Profile | NONE")
+    #wabout = response.json()["about"]
+    wabout = whatsapp_data.get("about", "About | NONE")
   else:
     whatsappx = f"WhatsApp | Invalid | {phone_number}"
     wuser = "User | NONE"
     wprofile = "Profile | NONE"
-    wabout = "About | NONE"
-    
-
-  print(Colors.pink + "Social Media")
-  print(Colors.purple + "-----------------------------------------------------")
-  print(Colors.pink + twitter)
-  print(Colors.pink + vk)
-  print(Colors.pink + venmo)
-  print(Colors.pink + whatsappx)
-  print(Colors.purple + "-----------------------")
-  print(Colors.purple + wuser)
-  print(Colors.purple + wprofile)
-  print(Colors.purple + wabout)
-  print(Colors.purple + "-----------------------")
-  print(Colors.purple + "-----------------------------------------------------\n")
-
-  input("Press Enter To Return to menu ")
-  main()
-         
+    wabout = "About | NONE" 
+    """
 
 
-
-
+# added a little more clarity and detail
  if option == "2":
-  print(Colors.purple + "To input the phone number in proper format please do it like so")
-  print(Colors.purple + "[+countrycode][first3][second3][last4]")
-  print(Colors.pink + "ex. +18255665543")
-  input(Colors.blue + "Press Enter To Return To Main Menu ")
+  print(Colors.purple + "IMPORTANT! The phone number must be input properly for Phonium to work.")
+  print(Colors.pink + "Start with the country code, then the area code, then the exchange, then the last 4 digits")
+  print(Colors.blue + "[countrycode][first3][second3][last4]")
+  print(Colors.purple + "ex. 18255665543")
+  input(Colors.pink + "Do NOT add any spaces, hyphens or parentheses.")
+  input(Colors.blue + "In other words, don't use any non-numeric characters.")
+  input(Colors.purple + "Press Enter To Return To Main Menu.")
   main()
+
  if option == "3":
   os.system('exit')
 
