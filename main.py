@@ -13,9 +13,10 @@ with open("config.json", "r") as file:
     whatsapp = config.get("whatsapp") # https://rapidapi.com/airaudoeduardo/api/whatsapp-data1/pricing get from here
 
 def main():
- os.system('cls')
-
- banner = """
+    # while True avoids recursive calls to main
+    while True:
+        os.system('cls')
+        banner = """
         _                 _                 
        | |               (_)                
   _ __ | |__   ___  _ __  _ _   _ _ __ ___  
@@ -27,93 +28,117 @@ def main():
 -----------------------------------------------------
             1. Search Phone Number
             2. Formatting Information 
-            3. Exit"""
- print((Colorate.Vertical(Colors.blue_to_purple, banner,1)))
- option = input(Colors.blue + "input > ")
- if option == "1":
-  phone_number = "+" + input(Colors.purple + "Phone Number: ").lstrip("+")
-  # if this works as intended, then the user does not have to enter a + ... but if they do, it'll trim it out
-  parsed_number = phonenumbers.parse(phone_number)
-        
-  country = geocoder.region_code_for_number(parsed_number)
-  location = geocoder.description_for_number(parsed_number, "en")
-        
-  phone_carrier = carrier.name_for_number(parsed_number, "en")
-        
-  timezones = timezone.time_zones_for_number(parsed_number)
-        
-  is_valid = phonenumbers.is_valid_number(parsed_number)
-        
-  is_possible = phonenumbers.is_possible_number(parsed_number)
-  print(Colors.pink + "Phone Number Information")      
-  print(Colors.purple + "-----------------------------------------------------")
-  print(Colors.pink + f"Country: {country}")
-  print(Colors.pink + f"Location: {location}")
-  print(Colors.pink + f"Phone Carrier: {phone_carrier}")
-  print(Colors.pink + f"Timezones: {timezones}")
-  print(Colors.pink + f"Validation: {is_valid}")
-  print(Colors.purple + "-----------------------------------------------------")
-  results = bing_search(phone_number)
-        
-  if results:
-    dorks = {}
-    for idx, url in enumerate(results, 1):
-        dorks[idx] = url  
-    else:
-     print("")
+            3. Exit
+            """
+        print((Colorate.Vertical(Colors.blue_to_purple, banner, 1)))
+        option = input(Colors.blue + "input > ")
+        if option == "2":
+            print(Colors.purple + "IMPORTANT! The phone number must be input properly for Phonium to work.")
+            print(
+                Colors.pink + "Start with the country code, then the area code, then the exchange, then the last 4 digits")
+            print(Colors.blue + "[countrycode][first3][second3][last4]")
+            print(Colors.purple + "ex. 18255665543")
+            input(Colors.pink + "Do NOT add any spaces, hyphens or parentheses.")
+            input(Colors.blue + "In other words, don't use any non-numeric characters.")
+            input(Colors.purple + "Press Enter To Return To Main Menu.")
+            continue
+        if option == "3":
+            print('Thank you for using Phonium! Goodbye.')
+            break
+        if option =="1":
+            phone_number = "+" + input(Colors.purple + "Phone Number: ").lstrip("+")
+            # if this works as intended, then the user does not have to enter a + ... but if they do, it'll trim it out
+            try:
+                parsed_number = phonenumbers.parse(phone_number)
+                # Anything is possible, but this phone number might not be.
+                is_possible = phonenumbers.is_possible_number(parsed_number)
+                if not is_possible:
+                    print(Colors.red + "This number is not even structurally valid.\n Try again?")
+                    input("Press any key to return to the main menu")
+                    continue
 
-  print(Colors.pink + "Google Dorks")
-  print(Colors.purple + "-----------------------------------------------------")
-  print(Colors.pink + "\n".join([f"{key}: {value}" for key, value in dorks.items()]))
-  print(Colors.purple + "-----------------------------------------------------\n")
+                is_valid = phonenumbers.is_valid_number(parsed_number)
+                if not is_valid:
+                    print(Colors.red + "This number is possible, but not valid.\n Try again?")
+                    input("Press any key to return to the main menu")
+                    continue
+    # if the number is possible and valid, let's find out more!
+                # Metadata
+                country = geocoder.region_code_for_number(parsed_number)
+                location = geocoder.description_for_number(parsed_number, "en")
+                phone_carrier = carrier.name_for_number(parsed_number, "en")
+                timezones = timezone.time_zones_for_number(parsed_number)
+                print(Colors.pink + "Phone Number Metadata")
+                print(Colors.purple + "-----------------------------------------------------")
+                print(Colors.pink + f"Country: {country}")
+                print(Colors.pink + f"Location: {location}")
+                print(Colors.pink + f"Phone Carrier: {phone_carrier}")
+                print(Colors.pink + f"Timezones: {timezones}")
+                print(Colors.pink + f"Validation: {is_valid}")
+                print(Colors.purple + "-----------------------------------------------------")
+                print(Colors.pink + "Google (Bing) Dorks")
+                print(Colors.purple + "-----------------------------------------------------")
+                print(
+                    Colors.blue + "Use with discretion and some salt: These are just web hits containing this number string \n")
+                print(Colors.pink + "\n".join([f"{key}: {value}" for key, value in dorks.items()]))
+                print(Colors.purple + "-----------------------------------------------------\n")
+
+                results = bing_search(phone_number)
+                if results:
+                    dorks = {}
+                    for idx, url in enumerate(results, 1):
+                        dorks[idx] = url
+                    else:
+                        print("No dorks found. Maybe just a few nerds.")
+                headers = {
+                'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Mobile Safari/537.36',
+            }
+                json_data = {
+                    'flow_token': 'g;174216975781989414:-1742169834411:7Mw2FG5FuO3BTkP2efReVRdc:1',
+                    'subtask_inputs': [
+                        {
+                            'subtask_id': 'PasswordResetBegin',
+                            'enter_text': {
+                                'text': f'{phone_number}',
+                                'link': 'next_link',
+                            },
+                        },
+                    ],
+                }
+                # Twitter time
+                response = requests.post('https://api.x.com/1.1/onboarding/task.json', headers=headers, json=json_data)
+                if response.status_code == 200:
+                    twitter = f"Twitter | Valid | {phone_number}"
+                else:
+                    twitter = f"Twitter | Invalid | {phone_number}"
+                params = {
+                    'v': '5.245',
+                    'client_id': '7913379',
+                }
+                data = {
+                    'phone': f'{phone_number}',
+                    'supported_ways': 'call_in',
+                    'supported_ways_settings': 'callreset_preview_enabled',
+                    'sid': '',
+                    'super_app_token': '',
+                    'device_id': 'Rf6rzquyU8xC4pJBTid1q',
+                    'external_device_id': '',
+                    'service_group': '',
+                    'lang': 'en',
+                    'auth_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzaWQiOiJOR1kxWkRkaU5UWmxPVEUwWldKak4yVXlPVEUzWlRVMCIsImhhc2giOiI5MThjOTkyNjEzNDM2N2EzIiwiZXhwIjoxNzQyMTc1Njk1fQ.50X3Wu0DlCgeU0thE3_E-HhGZavzU3CxPWlN6WgtmF8',
+                    'allow_callreset': '1',
+                    'access_token': '',
+                }
+
+         except phonenumbers.NumberParseException:(
+            print(Colors.red + "Could not parse the number. Please enter a valid number."))
+            input("Press Enter to return to the main menu.")
+            continue
 
 
 
-  headers = {
-    'user-agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Mobile Safari/537.36',
-}
-
-  json_data = {
-    'flow_token': 'g;174216975781989414:-1742169834411:7Mw2FG5FuO3BTkP2efReVRdc:1',
-    'subtask_inputs': [
-        {
-            'subtask_id': 'PasswordResetBegin',
-            'enter_text': {
-                'text': f'{phone_number}',
-                'link': 'next_link',
-            },
-        },
-    ],
-
-}
-
-  response = requests.post('https://api.x.com/1.1/onboarding/task.json', headers=headers, json=json_data)
-  if response == "200":
-    twitter =  f"Twitter | Valid | {phone_number}"
-  else:
-    twitter = f"Twitter | Invalid | {phone_number}"
 
 
-
-  params = {
-    'v': '5.245',
-    'client_id': '7913379',
-}
-
-  data = {
-    'phone': f'{phone_number}',
-    'supported_ways': 'call_in',
-    'supported_ways_settings': 'callreset_preview_enabled',
-    'sid': '',
-    'super_app_token': '',
-    'device_id': 'Rf6rzquyU8xC4pJBTid1q',
-    'external_device_id': '',
-    'service_group': '',
-    'lang': 'en',
-    'auth_token': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzaWQiOiJOR1kxWkRkaU5UWmxPVEUwWldKak4yVXlPVEUzWlRVMCIsImhhc2giOiI5MThjOTkyNjEzNDM2N2EzIiwiZXhwIjoxNzQyMTc1Njk1fQ.50X3Wu0DlCgeU0thE3_E-HhGZavzU3CxPWlN6WgtmF8',
-    'allow_callreset': '1',
-    'access_token': '',
-}
 
   response = requests.post('https://api.vk.com/method/auth.validatePhone', params=params, data=data)
   if "Invalid phone number" in response.json():
@@ -150,7 +175,7 @@ def main():
   else:
     venmo = f"Venmo | Valid | {phone_number}"
   
-  number = phone_number.lstrip("+")
+  number = phone_number
   url = f"https://whatsapp-data1.p.rapidapi.com/number/{number}"
 
   headers = {
@@ -175,7 +200,7 @@ def main():
       wprofile = "Profile | NONE"
       wabout = "About | NONE"
 
- print(Colors.pink + "Social Media")
+ print(Colors.pink + "Social Media Affiliated with this number")
  print(Colors.purple + "-----------------------------------------------------")
  print(Colors.pink + twitter)
  print(Colors.pink + vk)
@@ -190,38 +215,7 @@ def main():
  print(Colors.purple + "-----------------------------------------------------\n")
 
  input("Press Enter To Return to menu ")
- main()
- """ if "isBusiness" in response.json():
-    whatsappx = f"WhatsApp | Valid | {phone_number}"
-    #wuser = response.json()["pushname"]
-    # .get... or is more pythonic and slightly more effficient.
-    wuser= whatsapp_data.get("pushname") or "User | NONE"
-    #wprofile = response.json()["profilePic"
-    wprofile = whatsapp_data.get("profilePic", "Profile | NONE")
-    #wabout = response.json()["about"]
-    wabout = whatsapp_data.get("about", "About | NONE")
-  else:
-    whatsappx = f"WhatsApp | Invalid | {phone_number}"
-    wuser = "User | NONE"
-    wprofile = "Profile | NONE"
-    wabout = "About | NONE" 
-    """
-
-
-# added a little more clarity and detail
- if option == "2":
-  print(Colors.purple + "IMPORTANT! The phone number must be input properly for Phonium to work.")
-  print(Colors.pink + "Start with the country code, then the area code, then the exchange, then the last 4 digits")
-  print(Colors.blue + "[countrycode][first3][second3][last4]")
-  print(Colors.purple + "ex. 18255665543")
-  input(Colors.pink + "Do NOT add any spaces, hyphens or parentheses.")
-  input(Colors.blue + "In other words, don't use any non-numeric characters.")
-  input(Colors.purple + "Press Enter To Return To Main Menu.")
-  main()
-
- if option == "3":
-  os.system('exit')
-
+ #main()
 
 def bing_search(query):
 
